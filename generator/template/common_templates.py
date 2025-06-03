@@ -1,29 +1,39 @@
+from typing import Dict
+
 class CommonTemplates:
     """Template handler for common files like MainActivity, gradle.properties, etc."""
-    
+
     def __init__(self, config: dict):
         self.config = config
         self.project_config = config['project']
         self.app_config = config['configuration']
-    
-    def get_templates(self) -> dict:
+        self.project_pascal_case = self.project_config['name'].replace(' ', '')
+        self.font_family = self.app_config.get('fontFamily', '').lower()
+
+    def get_templates(self) -> Dict[str, str]:
         """Return all common templates"""
-        return {
-            'main_activity_kotlin.j2': self._get_main_activity_kotlin_template(),
-            'main_activity_java.j2': self._get_main_activity_java_template(),
+        templates = {
             'gradle_properties.j2': self._get_gradle_properties_template(),
         }
-    
-    def _get_main_activity_kotlin_template(self):
-        """Generate MainActivity.kt template"""
-        return '''package {{ config.project.package }}
 
-{% if config.configuration.dependencyInjection == 'hilt' %}
-import dagger.hilt.android.AndroidEntryPoint
-{% endif %}
-import android.os.Bundle
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
-import androidx.activity.ComponentActivity
+        language = self.app_config.get('language')
+        ui_toolkit = self.app_config.get('uiToolkit')
+
+        if language == 'kotlin':
+            templates['main_activity_kotlin.j2'] = self._get_main_activity_kotlin_template()
+        elif language == 'java' and ui_toolkit == 'xml':
+            templates['main_activity_java.j2'] = self._get_main_activity_java_template()
+
+        return templates
+
+    def _get_main_activity_kotlin_template(self) -> str:
+        is_compose = self.app_config.get('uiToolkit') == 'jetpack-compose'
+        use_hilt = self.app_config.get('dependencyInjection') == 'hilt'
+
+        return f'''package {{{{ config.project.package }}}}
+
+{f"import dagger.hilt.android.AndroidEntryPoint\n" if use_hilt else ''}import android.os.Bundle
+{'''import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -31,26 +41,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import {{ config.project.package }}.ui.theme.{{ config.project.name.replace(' ', '') }}Theme
-{% else %}
-import androidx.appcompat.app.AppCompatActivity
-{% endif %}
+import ''' + f"{self.project_config['package']}.ui.theme.{self.project_pascal_case}Theme" if is_compose else 'import androidx.appcompat.app.AppCompatActivity'}
 
-{% if config.configuration.dependencyInjection == 'hilt' %}
-@AndroidEntryPoint
-{% endif %}
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
-class MainActivity : ComponentActivity() {
+{f"@AndroidEntryPoint\n" if use_hilt else ''}{'''class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            {{ config.project.name.replace(' ', '') }}Theme {
+            ''' + f"{self.project_pascal_case}Theme" + ''' {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    Greeting()
                 }
             }
         }
@@ -58,9 +62,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(modifier: Modifier = Modifier) {
     Text(
-        text = "Hello $name!",
+        text = stringResource(id = R.string.hello_android),
         modifier = modifier
     )
 }
@@ -68,54 +72,27 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    {{ config.project.name.replace(' ', '') }}Theme {
-        Greeting("Android")
+    ''' + f"{self.project_pascal_case}Theme" + ''' {
+        Greeting()
     }
-}
-{% else %}
-class MainActivity : AppCompatActivity() {
+}''' if is_compose else '''class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
-}
-{% endif %}
+}'''}
 '''
-    
-    def _get_main_activity_java_template(self):
-        """Generate MainActivity.java template"""
+
+    def _get_main_activity_java_template(self) -> str:
+        use_hilt = self.app_config.get('dependencyInjection') == 'hilt'
+
         return '''package {{ config.project.package }};
 
-{% if config.configuration.dependencyInjection == 'hilt' %}
-import dagger.hilt.android.AndroidEntryPoint;
-{% endif %}
+''' + ("import dagger.hilt.android.AndroidEntryPoint;\n" if use_hilt else '') + '''
 import android.os.Bundle;
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
-import androidx.activity.ComponentActivity;
-import androidx.activity.compose.ComponentActivityKt;
-import androidx.compose.foundation.layout.BoxKt;
-import androidx.compose.material3.MaterialTheme;
-import androidx.compose.material3.SurfaceKt;
-import androidx.compose.material3.TextKt;
-import androidx.compose.runtime.Composable;
-import androidx.compose.ui.Modifier;
-import androidx.compose.ui.tooling.preview.Preview;
-{% else %}
 import androidx.appcompat.app.AppCompatActivity;
-{% endif %}
 
-{% if config.configuration.dependencyInjection == 'hilt' %}
-@AndroidEntryPoint
-{% endif %}
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
-public class MainActivity extends ComponentActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ComponentActivityKt.setContent(this, ComposableSingletons$MainActivityKt.INSTANCE.getLambda-1$app_debug(), null);
-    }
-}
-{% else %}
+''' + ("@AndroidEntryPoint\n" if use_hilt else '') + '''
 public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,35 +100,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 }
-{% endif %}
 '''
-    
-    def _get_gradle_properties_template(self):
-        """Generate gradle.properties template"""
-        return '''# Project-wide Gradle settings.
-# IDE (e.g. Android Studio) users:
-# Gradle settings configured through the IDE *will override*
-# any settings specified in this file.
-# For more details on how to configure your build environment visit
-# http://www.gradle.org/docs/current/userguide/build_environment.html
-# Specifies the JVM arguments used for the daemon process.
-# The setting is particularly useful for tweaking memory settings.
+
+    def _get_gradle_properties_template(self) -> str:
+        view_binding_enabled = self.app_config.get('viewBinding', False)
+        return f'''# Project-wide Gradle settings.
 org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-# When configured, Gradle will run in incubating parallel mode.
-# This option should only be used with decoupled projects. More details, visit
-# http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects
-# org.gradle.parallel=true
-# AndroidX package structure to make it clearer which packages are bundled with the
-# Android operating system, and which are packaged with your app's APK
-# https://developer.android.com/topic/libraries/support-library/androidx-rn
 android.useAndroidX=true
-# Kotlin code style for this project: "official" or "obsolete":
 kotlin.code.style=official
-# Enables namespacing of each library's R class so that its R class includes only the
-# resources declared in the library itself and none from the library's dependencies,
-# thereby reducing the size of the R class for that library
 android.nonTransitiveRClass=true
-{% if config.configuration.viewBinding %}
-android.enableViewBinding=true
-{% endif %}
+{'android.enableViewBinding=true' if view_binding_enabled else ''}
+'''
+
+    def get_font_copy_instructions(self) -> str:
+        """
+        Returns shell instructions as string to copy required font .ttf files
+        from selected font family directory to app/src/main/res/font.
+        """
+        if not self.font_family:
+            return "# No font family specified in configuration."
+
+        font_source_path = f"fontfamilies/{self.font_family}"
+        return f'''
+# Create font destination directory
+mkdir -p app/src/main/res/font
+
+# Copy .ttf files from selected font family
+cp "{font_source_path}"/*.ttf app/src/main/res/font/
+echo "Copied fonts from {font_source_path}"
 '''

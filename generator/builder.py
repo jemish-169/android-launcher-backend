@@ -223,10 +223,16 @@ class AndroidProjectBuilder:
         """Generate Jetpack Compose theme files"""
         theme_dir = app_dir / f'src/main/{language_dir}/{package_path}/ui/theme'
         
-        template = self.jinja_env.get_template('compose_theme.j2')
-        
         # Generate Theme.kt
         if self.app_config['language'] == 'kotlin':
-            self.utils.write_file(theme_dir / 'Theme.kt', template.render(config=self.config, file_type='theme'))
-            self.utils.write_file(theme_dir / 'Color.kt', template.render(config=self.config, file_type='color'))
-            self.utils.write_file(theme_dir / 'Type.kt', template.render(config=self.config, file_type='type'))
+            # Load and render Theme.kt
+            theme_template = self.jinja_env.get_template('compose_theme.j2')
+            self.utils.write_file(theme_dir / 'Theme.kt', theme_template.render(config=self.config))
+            
+            # Load and render Color.kt
+            color_template = self.jinja_env.get_template('compose_color.j2')
+            self.utils.write_file(theme_dir / 'Color.kt', color_template.render(config=self.config))
+            
+            # Load and render Type.kt
+            type_template = self.jinja_env.get_template('compose_typography.j2')
+            self.utils.write_file(theme_dir / 'Type.kt', type_template.render(config=self.config))

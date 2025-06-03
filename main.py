@@ -2,10 +2,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 from generator.builder import AndroidProjectBuilder
 import json
-import tempfile
 import os
-import shutil
-from pathlib import Path
 from starlette.background import BackgroundTask
 
 app = FastAPI(title="Android Project Generator", version="1.0.0")
