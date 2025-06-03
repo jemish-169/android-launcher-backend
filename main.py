@@ -6,6 +6,7 @@ import tempfile
 import os
 import shutil
 from pathlib import Path
+from starlette.background import BackgroundTask
 
 app = FastAPI(title="Android Project Generator", version="1.0.0")
 
@@ -47,7 +48,7 @@ async def generate_android_project(file: UploadFile = File(...)):
             iter_file(),
             media_type="application/zip",
             headers={"Content-Disposition": f"attachment; filename={project_name}.zip"},
-            background=cleanup
+            background=BackgroundTask(cleanup)
         )
         
     except json.JSONDecodeError:
