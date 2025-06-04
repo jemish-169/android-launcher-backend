@@ -1,4 +1,6 @@
+import glob
 import os
+import shutil
 import tempfile
 import zipfile
 from pathlib import Path
@@ -17,6 +19,10 @@ class AndroidProjectBuilder:
         self.project_config = config['project']
         self.app_config = config['configuration']
         self.utils = ProjectUtils()
+
+        typography = self.app_config.get('typography', {})
+        font_name = typography.get('fontName', '')
+        self.font_family = font_name
         
         # Setup Jinja2 environment
         template_dir = Path(__file__).parent / 'templates'
@@ -63,6 +69,8 @@ class AndroidProjectBuilder:
             self._generate_root_files(project_dir)
             self._generate_app_files(project_dir)
             
+            self._copy_font_files(project_dir)
+
             # Create ZIP file
             zip_path = tempfile.mktemp(suffix='.zip')
             with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -92,7 +100,8 @@ class AndroidProjectBuilder:
             'app/src/main/res/mipmap-xxhdpi',
             'app/src/main/res/mipmap-xxxhdpi',
             'app/src/main/res/xml',
-            'gradle/wrapper'
+            'gradle/wrapper',
+            'app/src/main/res/font'
         ]
         
         # Add internationalization directories
@@ -107,6 +116,41 @@ class AndroidProjectBuilder:
         
         self.utils.create_directories(project_dir, directories)
     
+
+    def _copy_font_files(self, project_dir : str):
+        """
+        Actually copies font .ttf files from selected font family directory 
+        to app/src/main/res/font.
+        """
+        if not self.font_family:
+            return
+
+        font_source_path = f"fontfamilies/{self.font_family}"
+        font_dest_path = f"{project_dir}/app/src/main/res/font"
+
+        try:
+            # Check if source directory exists
+            if not os.path.exists(font_source_path):
+                return
+
+            # Create destination directory
+            os.makedirs(font_dest_path, exist_ok=True)
+
+            # Find and copy all .ttf files
+            ttf_files = glob.glob(os.path.join(font_source_path, "*.ttf"))
+
+            if not ttf_files:
+                return
+
+            for ttf_file in ttf_files:
+                filename = os.path.basename(ttf_file)
+                dest_file = os.path.join(font_dest_path, filename)
+                shutil.copy2(ttf_file, dest_file)
+
+
+        except Exception as e:
+            print(f"Error copying fonts: {str(e)}")
+
     def _generate_root_files(self, project_dir: Path):
         """Generate root-level project files"""
         build_format = self.app_config.get('buildFormat', 'gradle')

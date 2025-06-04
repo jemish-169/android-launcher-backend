@@ -142,7 +142,8 @@ val {{ config.configuration.typography.fontName.title() if config.configuration.
     Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_light, FontWeight.Light),
     Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_regular, FontWeight.Normal),
     Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_medium, FontWeight.Medium),
-    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_bold, FontWeight.Bold)
+    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_bold, FontWeight.Bold),
+    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_semibold, FontWeight.SemiBold)
 )
 
 // Set of Material typography styles

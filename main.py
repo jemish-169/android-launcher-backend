@@ -4,8 +4,17 @@ from generator.builder import AndroidProjectBuilder
 import json
 import os
 from starlette.background import BackgroundTask
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Android Project Generator", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/generate")
 async def generate_android_project(file: UploadFile = File(...)):
@@ -57,6 +66,10 @@ async def generate_android_project(file: UploadFile = File(...)):
 async def health_check():
     return {"status": "healthy", "message": "Android Project Generator is running"}
 
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "message": "Android Project Generator is running"}
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="192.168.0.90", port=8000, reload=True)

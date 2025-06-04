@@ -8,7 +8,6 @@ class CommonTemplates:
         self.project_config = config['project']
         self.app_config = config['configuration']
         self.project_pascal_case = self.project_config['name'].replace(' ', '')
-        self.font_family = self.app_config.get('fontFamily', '').lower()
 
     def get_templates(self) -> Dict[str, str]:
         """Return all common templates"""
@@ -110,22 +109,4 @@ android.useAndroidX=true
 kotlin.code.style=official
 android.nonTransitiveRClass=true
 {'android.enableViewBinding=true' if view_binding_enabled else ''}
-'''
-
-    def get_font_copy_instructions(self) -> str:
-        """
-        Returns shell instructions as string to copy required font .ttf files
-        from selected font family directory to app/src/main/res/font.
-        """
-        if not self.font_family:
-            return "# No font family specified in configuration."
-
-        font_source_path = f"fontfamilies/{self.font_family}"
-        return f'''
-# Create font destination directory
-mkdir -p app/src/main/res/font
-
-# Copy .ttf files from selected font family
-cp "{font_source_path}"/*.ttf app/src/main/res/font/
-echo "Copied fonts from {font_source_path}"
 '''
