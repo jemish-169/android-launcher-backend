@@ -10,6 +10,7 @@ from .template.compose_templates import ComposeTemplates
 from .template.xml_templates import XmlTemplates
 from .template.gradle_templates import GradleTemplates
 from .template.common_templates import CommonTemplates
+from .template.test_templates import TestTemplates
 
 class AndroidProjectBuilder:
     """Main builder class for generating Android projects"""
@@ -34,6 +35,7 @@ class AndroidProjectBuilder:
         self.xml_templates = XmlTemplates(self.config)
         self.gradle_templates = GradleTemplates(self.config)
         self.common_templates = CommonTemplates(self.config)
+        self.test_templates = TestTemplates(self.config)
         
         # Create templates directory and files if they don't exist
         self._create_default_templates()
@@ -49,6 +51,7 @@ class AndroidProjectBuilder:
         template_files.update(self.xml_templates.get_templates())
         template_files.update(self.compose_templates.get_templates())
         template_files.update(self.common_templates.get_templates())
+        template_files.update(self.test_templates.get_templates())
         
         for filename, content in template_files.items():
             template_path = templates_dir / filename
@@ -68,6 +71,7 @@ class AndroidProjectBuilder:
             # Generate files
             self._generate_root_files(project_dir)
             self._generate_app_files(project_dir)
+            self._generate_test_files(project_dir)
             
             self._copy_font_files(project_dir)
 
@@ -90,6 +94,8 @@ class AndroidProjectBuilder:
         directories = [
             'app/src/main',
             f'app/src/main/{language_dir}/{package_path}',
+            f'app/src/test/{language_dir}/{package_path}',
+            f'app/src/androidTest/{language_dir}/{package_path}',
             'app/src/main/res/layout',
             'app/src/main/res/values',
             'app/src/main/res/values-night',
@@ -116,7 +122,6 @@ class AndroidProjectBuilder:
         
         self.utils.create_directories(project_dir, directories)
     
-
     def _copy_font_files(self, project_dir : str):
         """
         Actually copies font .ttf files from selected font family directory 
@@ -225,6 +230,40 @@ class AndroidProjectBuilder:
         if self.app_config.get('uiToolkit') == 'jetpack-compose':
             self._generate_compose_theme(app_dir, package_path, language_dir)
     
+    def _generate_test_files(self, project_dir: Path):
+        """Generate test files"""
+        test_dir = project_dir / 'app'
+
+        # Generate MainActivityTest
+        package_path = self.utils.package_to_path(self.project_config['package'])
+        language_dir = 'kotlin' if self.app_config['language'] == 'kotlin' else 'java'
+        
+        if self.app_config['language'] == 'kotlin':
+            template = self.jinja_env.get_template('unit_test_kt.j2')
+            self.utils.write_file(
+                test_dir / f'src/test/{language_dir}/{package_path}/ExampleUnitTest.kt',
+                template.render(config=self.config)
+            )
+        else:
+            template = self.jinja_env.get_template('unit_test_java.j2')
+            self.utils.write_file(
+                test_dir / f'src/test/{language_dir}/{package_path}/ExampleUnitTest.java',
+                template.render(config=self.config)
+            )
+        
+        if self.app_config['language'] == 'kotlin':
+            template = self.jinja_env.get_template('example_instrumented_test_kt.j2')
+            self.utils.write_file(
+                test_dir / f'src/androidTest/{language_dir}/{package_path}/ExampleInstrumentedTest.kt',
+                template.render(config=self.config)
+            )
+        else:
+            template = self.jinja_env.get_template('example_instrumented_test_java.j2')
+            self.utils.write_file(
+                test_dir / f'src/androidTest/{language_dir}/{package_path}/ExampleInstrumentedTest.java',
+                template.render(config=self.config)
+            )
+           
     def _generate_resources(self, app_dir: Path):
         """Generate resource files"""
         res_dir = app_dir / 'src/main/res'
@@ -262,7 +301,13 @@ class AndroidProjectBuilder:
         if self.app_config.get('uiToolkit') != 'jetpack-compose':
             template = self.jinja_env.get_template('activity_main_xml.j2')
             self.utils.write_file(res_dir / 'layout/activity_main.xml', template.render(config=self.config))
-    
+
+        template = self.jinja_env.get_template('data_extraction_rules_xml.j2')
+        self.utils.write_file(res_dir / 'xml/data_extraction_rules.xml', template.render(config=self.config))        
+
+        template = self.jinja_env.get_template('backup_rules_xml.j2')
+        self.utils.write_file(res_dir / 'xml/backup_rules.xml', template.render(config=self.config)) 
+
     def _generate_compose_theme(self, app_dir: Path, package_path: str, language_dir: str):
         """Generate Jetpack Compose theme files"""
         theme_dir = app_dir / f'src/main/{language_dir}/{package_path}/ui/theme'

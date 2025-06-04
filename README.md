@@ -1,32 +1,3 @@
-ANDROID PROJECT GENERATOR - FILE STRUCTURE
-
-project_root/
-├── main.py                          # FastAPI entry point
-├── requirements.txt                 # Python dependencies
-├── generator/
-│   ├── __init__.py                 # Package initialization
-│   ├── builder.py                  # Main project generation logic
-│   ├── utils.py                    # Utility functions
-│   └── templates/                  # Jinja2 templates directory
-│       ├── build_gradle.j2         # Root build.gradle template
-│       ├── build_gradle_kts.j2     # Root build.gradle.kts template
-│       ├── settings_gradle.j2      # settings.gradle template
-│       ├── settings_gradle_kts.j2  # settings.gradle.kts template
-│       ├── libs_versions_toml.j2   # libs.versions.toml template
-│       ├── app_build_gradle.j2     # App build.gradle template
-│       ├── app_build_gradle_kts.j2 # App build.gradle.kts template
-│       ├── android_manifest.j2     # AndroidManifest.xml template
-│       ├── main_activity_kotlin.j2 # MainActivity.kt template
-│       ├── main_activity_java.j2   # MainActivity.java template
-│       ├── strings_xml.j2          # strings.xml template
-│       ├── colors_xml.j2           # colors.xml template
-│       ├── themes_xml.j2           # themes.xml template
-│       ├── network_config_xml.j2   # network_security_config.xml template
-│       ├── compose_theme.j2        # Compose theme files template
-│       ├── activity_main_xml.j2    # activity_main.xml template
-│       └── gradle_properties.j2    # gradle.properties template
-└── output/                         # Temporary output directory (auto-created)
-
 DEPLOYMENT INSTRUCTIONS:
 
 1. Install Python 3.10 or higher
