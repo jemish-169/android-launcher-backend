@@ -1,10 +1,10 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import BackgroundTasks, FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 from generator.builder import AndroidProjectBuilder
-import json
-import os
-from starlette.background import BackgroundTask
+import json, os
 from fastapi.middleware.cors import CORSMiddleware
+from models.config_model import ProjectConfig
+from pydantic import ValidationError
 
 app = FastAPI(title="Android Project Generator", version="1.0.0")
 
@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 @app.post("/generate")
-async def generate_android_project(file: UploadFile = File(...)):
+async def generate_android_project(file: UploadFile = File(...), background_tasks: BackgroundTasks = BackgroundTasks()):
     """
     Generate Android project ZIP from JSON configuration
     """
@@ -27,13 +27,9 @@ async def generate_android_project(file: UploadFile = File(...)):
     try:
         # Read JSON configuration
         content = await file.read()
-        config = json.loads(content.decode('utf-8'))
+        config_dict = json.loads(content.decode('utf-8'))
         
-        # Validate required fields
-        if not config.get('project', {}).get('name'):
-            raise HTTPException(status_code=400, detail="Project name is required")
-        if not config.get('project', {}).get('package'):
-            raise HTTPException(status_code=400, detail="Project package is required")
+        config = ProjectConfig(**config_dict)
         
         # Generate project
         builder = AndroidProjectBuilder(config)
@@ -45,21 +41,21 @@ async def generate_android_project(file: UploadFile = File(...)):
                 yield from file_like
         
         # Clean up temp file after response
-        def cleanup():
-            if os.path.exists(zip_path):
-                os.remove(zip_path)
-        
-        project_name = config['project']['name']
+        background_tasks.add_task(os.remove, zip_path)
+
         return StreamingResponse(
             iter_file(),
             media_type="application/zip",
-            headers={"Content-Disposition": f"attachment; filename={project_name}.zip"},
-            background=BackgroundTask(cleanup)
+            headers={"Content-Disposition": f"attachment; filename={config.project.name}.zip"},
+            background=background_tasks
         )
         
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON format")
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"Error generating project: {str(e)}")
 
 @app.get("/health")

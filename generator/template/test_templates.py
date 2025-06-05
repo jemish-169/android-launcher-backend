@@ -1,15 +1,17 @@
+from models.config_model import ProjectConfig
+from models.enums import Language
+
+
 class TestTemplates:
     """Template handler for test and androidTest packages"""
 
-    def __init__(self, config: dict):
+    def __init__(self, config: ProjectConfig):
         self.config = config
-        self.project_config = config['project']
-        self.app_config = config['configuration']
 
     def get_templates(self) -> dict:
-        language = self.app_config.get('language')
+        language = self.config.configuration.language
         
-        if language == 'kotlin':
+        if language == Language.kotlin:
             return {
                 'unit_test_kt.j2': self._get_test_kotlin(),
                 'example_instrumented_test_kt.j2': self._get_android_test_kotlin()

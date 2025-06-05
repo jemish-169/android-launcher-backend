@@ -5,6 +5,8 @@ import tempfile
 import zipfile
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
+from models.config_model import ProjectConfig
+from models.enums import Language, UIToolkit
 from .utils import ProjectUtils
 from .template.compose_templates import ComposeTemplates
 from .template.xml_templates import XmlTemplates
@@ -15,15 +17,9 @@ from .template.test_templates import TestTemplates
 class AndroidProjectBuilder:
     """Main builder class for generating Android projects"""
     
-    def __init__(self, config: dict):
-        self.config = config
-        self.project_config = config['project']
-        self.app_config = config['configuration']
+    def __init__(self, config: ProjectConfig):
         self.utils = ProjectUtils()
-
-        typography = self.app_config.get('typography', {})
-        font_name = typography.get('fontName', '')
-        self.font_family = font_name
+        self.config = config
         
         # Setup Jinja2 environment
         template_dir = Path(__file__).parent / 'templates'
@@ -63,7 +59,7 @@ class AndroidProjectBuilder:
         """Build the Android project and return ZIP file path"""
         # Create temporary directory
         with tempfile.TemporaryDirectory() as temp_dir:
-            project_dir = Path(temp_dir) / self.utils.sanitize_project_name(self.project_config['name'])
+            project_dir = Path(temp_dir) / self.utils.sanitize_project_name(self.config.project.name)
             
             # Create project structure
             self._create_project_structure(project_dir)
@@ -88,9 +84,8 @@ class AndroidProjectBuilder:
     
     def _create_project_structure(self, project_dir: Path):
         """Create the basic Android project directory structure"""
-        package_path = self.utils.package_to_path(self.project_config['package'])
-        language_dir = 'kotlin' if self.app_config['language'] == 'kotlin' else 'java'
-        
+        package_path = self.utils.package_to_path(self.config.project.package)
+        language_dir = self.config.configuration.language.value
         directories = [
             'app/src/main',
             f'app/src/main/{language_dir}/{package_path}',
@@ -111,13 +106,13 @@ class AndroidProjectBuilder:
         ]
         
         # Add internationalization directories
-        if self.app_config.get('internationalization', {}).get('enabled'):
-            for lang in self.app_config['internationalization'].get('languages', []):
+        if self.config.configuration.internationalization.enabled:
+            for lang in self.config.configuration.internationalization.languages, []:
                 if lang != 'en':
                     directories.append(f'app/src/main/res/values-{lang}')
         
         # Add compose theme directory if using Jetpack Compose
-        if self.app_config.get('uiToolkit') == 'jetpack-compose':
+        if self.config.configuration.uiToolkit == UIToolkit.compose:
             directories.append(f'app/src/main/{language_dir}/{package_path}/ui/theme')
         
         self.utils.create_directories(project_dir, directories)
@@ -127,10 +122,7 @@ class AndroidProjectBuilder:
         Actually copies font .ttf files from selected font family directory 
         to app/src/main/res/font.
         """
-        if not self.font_family:
-            return
-
-        font_source_path = f"fontfamilies/{self.font_family}"
+        font_source_path = f"fontfamilies/{self.config.configuration.fontName}"
         font_dest_path = f"{project_dir}/app/src/main/res/font"
 
         try:
@@ -158,7 +150,7 @@ class AndroidProjectBuilder:
 
     def _generate_root_files(self, project_dir: Path):
         """Generate root-level project files"""
-        build_format = self.app_config.get('buildFormat', 'gradle')
+        build_format = self.config.configuration.buildFormat
         
         # Generate build.gradle or build.gradle.kts
         if build_format == 'kts':
@@ -175,7 +167,7 @@ class AndroidProjectBuilder:
             self.utils.write_file(project_dir / 'settings.gradle', template.render(config=self.config))
         
         # Generate libs.versions.toml if enabled
-        if self.app_config.get('useLibsVersionsToml', False):
+        if self.config.configuration.useLibsVersionsToml:
             template = self.jinja_env.get_template('libs_versions_toml.j2')
             self.utils.write_file(project_dir / 'gradle/libs.versions.toml', template.render(config=self.config))
         
@@ -186,7 +178,7 @@ class AndroidProjectBuilder:
     def _generate_app_files(self, project_dir: Path):
         """Generate app-level files"""
         app_dir = project_dir / 'app'
-        build_format = self.app_config.get('buildFormat', 'gradle')
+        build_format = self.config.configuration.buildFormat
         
         # Generate app build.gradle
         if build_format == 'kts':
@@ -197,20 +189,20 @@ class AndroidProjectBuilder:
             self.utils.write_file(app_dir / 'build.gradle', template.render(config=self.config))
         
         # Generate AndroidManifest.xml
-        permissions = self.utils.get_permission_manifest_entries(self.app_config.get('permissions', []))
+        permissions = self.utils.get_permission_manifest_entries(self.config.configuration.permissions)
         template = self.jinja_env.get_template('android_manifest.j2')
         manifest_context = {
             'config': self.config,
             'permissions': permissions,
-            'use_network_config': self.app_config.get('httpNetworking', False)
+            'use_network_config': self.config.configuration.httpNetworking
         }
         self.utils.write_file(app_dir / 'src/main/AndroidManifest.xml', template.render(**manifest_context))
         
         # Generate MainActivity
-        package_path = self.utils.package_to_path(self.project_config['package'])
-        language_dir = 'kotlin' if self.app_config['language'] == 'kotlin' else 'java'
+        package_path = self.utils.package_to_path(self.config.project.package)
+        language_dir = self.config.configuration.language.value
         
-        if self.app_config['language'] == 'kotlin':
+        if self.config.configuration.language == Language.kotlin:
             template = self.jinja_env.get_template('main_activity_kotlin.j2')
             self.utils.write_file(
                 app_dir / f'src/main/{language_dir}/{package_path}/MainActivity.kt',
@@ -227,7 +219,7 @@ class AndroidProjectBuilder:
         self._generate_resources(app_dir)
         
         # Generate Compose theme if using Jetpack Compose
-        if self.app_config.get('uiToolkit') == 'jetpack-compose':
+        if self.config.configuration.uiToolkit == UIToolkit.compose:
             self._generate_compose_theme(app_dir, package_path, language_dir)
     
     def _generate_test_files(self, project_dir: Path):
@@ -235,10 +227,10 @@ class AndroidProjectBuilder:
         test_dir = project_dir / 'app'
 
         # Generate MainActivityTest
-        package_path = self.utils.package_to_path(self.project_config['package'])
-        language_dir = 'kotlin' if self.app_config['language'] == 'kotlin' else 'java'
+        package_path = self.utils.package_to_path(self.config.project.package)
+        language_dir = self.config.configuration.language.value
         
-        if self.app_config['language'] == 'kotlin':
+        if self.config.configuration.language == Language.kotlin:
             template = self.jinja_env.get_template('unit_test_kt.j2')
             self.utils.write_file(
                 test_dir / f'src/test/{language_dir}/{package_path}/ExampleUnitTest.kt',
@@ -251,7 +243,7 @@ class AndroidProjectBuilder:
                 template.render(config=self.config)
             )
         
-        if self.app_config['language'] == 'kotlin':
+        if self.config.configuration.language == Language.kotlin:
             template = self.jinja_env.get_template('example_instrumented_test_kt.j2')
             self.utils.write_file(
                 test_dir / f'src/androidTest/{language_dir}/{package_path}/ExampleInstrumentedTest.kt',
@@ -273,8 +265,8 @@ class AndroidProjectBuilder:
         self.utils.write_file(res_dir / 'values/strings.xml', template.render(config=self.config))
         
         # Generate internationalization strings
-        if self.app_config.get('internationalization', {}).get('enabled'):
-            for lang in self.app_config['internationalization'].get('languages', []):
+        if self.config.configuration.internationalization.enabled:
+            for lang in self.config.configuration.internationalization.languages, []:
                 if lang != 'en':
                     self.utils.write_file(
                         res_dir / f'values-{lang}/strings.xml',
@@ -289,16 +281,16 @@ class AndroidProjectBuilder:
         template = self.jinja_env.get_template('themes_xml.j2')
         self.utils.write_file(res_dir / 'values/themes.xml', template.render(config=self.config))
         
-        if self.app_config.get('themes', {}).get('lightDark', False):
+        if self.config.configuration.lightDark:
             self.utils.write_file(res_dir / 'values-night/themes.xml', template.render(config=self.config, is_dark=True))
         
         # Generate network_security_config.xml if HTTP networking is enabled
-        if self.app_config.get('httpNetworking', False):
+        if self.config.configuration.httpNetworking:
             template = self.jinja_env.get_template('network_config_xml.j2')
             self.utils.write_file(res_dir / 'xml/network_security_config.xml', template.render(config=self.config))
         
         # Generate activity_main.xml if using XML views
-        if self.app_config.get('uiToolkit') != 'jetpack-compose':
+        if self.config.configuration.uiToolkit != UIToolkit.compose:
             template = self.jinja_env.get_template('activity_main_xml.j2')
             self.utils.write_file(res_dir / 'layout/activity_main.xml', template.render(config=self.config))
 
@@ -313,7 +305,7 @@ class AndroidProjectBuilder:
         theme_dir = app_dir / f'src/main/{language_dir}/{package_path}/ui/theme'
         
         # Generate Theme.kt
-        if self.app_config['language'] == 'kotlin':
+        if self.config.configuration.language == Language.kotlin:
             # Load and render Theme.kt
             theme_template = self.jinja_env.get_template('compose_theme.j2')
             self.utils.write_file(theme_dir / 'Theme.kt', theme_template.render(config=self.config))

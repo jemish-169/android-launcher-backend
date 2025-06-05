@@ -1,7 +1,10 @@
+from models.config_model import ProjectConfig
+
+
 class GradleTemplates:
     """Handler for Gradle-related templates"""
     
-    def __init__(self, config: dict):
+    def __init__(self, config: ProjectConfig):
         self.config = config
     
     def get_templates(self):
@@ -22,10 +25,10 @@ class GradleTemplates:
 plugins {
     id 'com.android.application' version '8.2.0' apply false
     id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
     id 'com.google.dagger.hilt.android' version '2.48' apply false
 {% endif %}
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.0' apply false
 {% endif %}
 {% if config.configuration.enableRoom %}
@@ -39,10 +42,10 @@ plugins {
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
     alias(libs.plugins.hiltAndroid) apply false
 {% endif %}
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     alias(libs.plugins.kotlinSerialization) apply false
 {% endif %}
 {% if config.configuration.enableRoom %}
@@ -105,33 +108,33 @@ composeBom = "2023.10.01"
 appcompat = "1.6.1"
 material = "1.11.0"
 constraintlayout = "2.1.4"
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
 hilt = "2.48"
-{% elif config.configuration.dependencyInjection == 'koin' %}
+{% elif config.configuration.dependencyInjection.value == 'koin' %}
 koin = "3.5.0"
 {% endif %}
-{% if config.configuration.networking == 'retrofit' %}
+{% if config.configuration.networking.value == 'retrofit' %}
 retrofit = "2.9.0"
 okhttp = "4.12.0"
-{% if config.configuration.serialization == 'gson' %}
+{% if config.configuration.serialization.value == 'gson' %}
 gson = "2.10.1"
-{% elif config.configuration.serialization == 'moshi' %}
+{% elif config.configuration.serialization.value == 'moshi' %}
 moshi = "1.14.0"
 {% endif %}
-{% elif config.configuration.networking == 'ktor' %}
+{% elif config.configuration.networking.value == 'ktor' %}
 ktor = "2.3.7"
 {% endif %}
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
 kotlinxSerialization = "1.6.0"
 {% endif %}
-{% if config.configuration.localStorage == 'datastore' %}
+{% if config.configuration.localStorage.value == 'datastore' %}
 datastore = "1.0.0"
 {% endif %}
 {% if config.configuration.enableRoom %}
 room = "2.6.1"
 ksp = "1.9.0-1.0.13"
 {% endif %}
-{% if config.configuration.navigation == 'compose-navigation' or config.configuration.navigation == 'jetpack-navigation' %}
+{% if config.configuration.navigation.value == 'compose-navigation' or config.configuration.navigation.value == 'jetpack-navigation' %}
 navigation = "2.7.6"
 {% endif %}
 junit = "4.13.2"
@@ -145,7 +148,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -154,46 +157,46 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-{% if config.configuration.uiTheme == 'material3' %}
+{% if config.configuration.uiTheme.value == 'material3' %}
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 {% else %}
 androidx-compose-material = { group = "androidx.compose.material", name = "material" }
 {% endif %}
 {% endif %}
 
-{% if config.configuration.networking == 'retrofit' %}
+{% if config.configuration.networking.value == 'retrofit' %}
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
-{% if config.configuration.serialization == 'gson' %}
+{% if config.configuration.serialization.value == 'gson' %}
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
-{% elif config.configuration.serialization == 'moshi' %}
+{% elif config.configuration.serialization.value == 'moshi' %}
 retrofit-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
 moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
 {% endif %}
-{% elif config.configuration.networking == 'ktor' %}
+{% elif config.configuration.networking.value == 'ktor' %}
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 {% endif %}
 {% endif %}
 
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 {% endif %}
 
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
-{% elif config.configuration.dependencyInjection == 'koin' %}
+{% elif config.configuration.dependencyInjection.value == 'koin' %}
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 {% endif %}
 
-{% if config.configuration.localStorage == 'datastore' %}
+{% if config.configuration.localStorage.value == 'datastore' %}
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 {% endif %}
 
@@ -203,9 +206,9 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 {% endif %}
 
-{% if config.configuration.navigation == 'compose-navigation' %}
+{% if config.configuration.navigation.value == 'compose-navigation' %}
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
-{% elif config.configuration.navigation == 'jetpack-navigation' %}
+{% elif config.configuration.navigation.value == 'jetpack-navigation' %}
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
 {% endif %}
@@ -217,10 +220,10 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
 hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 {% endif %}
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 {% endif %}
 {% if config.configuration.enableRoom %}
@@ -232,13 +235,13 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
         return '''
 plugins {
     id 'com.android.application'
-{% if config.configuration.language == 'kotlin' %}
+{% if config.configuration.language.value == 'kotlin' %}
     id 'org.jetbrains.kotlin.android'
 {% endif %}
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
     id 'com.google.dagger.hilt.android'
 {% endif %}
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     id 'org.jetbrains.kotlin.plugin.serialization'
 {% endif %}
 {% if config.configuration.enableRoom %}
@@ -258,7 +261,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
         vectorDrawables {
             useSupportLibrary true
         }
@@ -272,15 +275,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_{{ config.configuration.javaVersion }}
-        targetCompatibility JavaVersion.VERSION_{{ config.configuration.javaVersion }}
+        sourceCompatibility JavaVersion.VERSION_{{ config.configuration.javaVersion.value }}
+        targetCompatibility JavaVersion.VERSION_{{ config.configuration.javaVersion.value }}
     }
-{% if config.configuration.language == 'kotlin' %}
+{% if config.configuration.language.value == 'kotlin' %}
     kotlinOptions {
-        jvmTarget = '{{ config.configuration.javaVersion }}'
+        jvmTarget = '{{ config.configuration.javaVersion.value }}'
     }
 {% endif %}
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     buildFeatures {
         compose true
     }
@@ -304,13 +307,13 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
     
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     implementation 'androidx.activity:activity-compose:1.8.2'
     implementation platform('androidx.compose:compose-bom:2023.10.01')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.ui:ui-tooling-preview'
-{% if config.configuration.uiTheme == 'material3' %}
+{% if config.configuration.uiTheme.value == 'material3' %}
     implementation 'androidx.compose.material3:material3'
 {% else %}
     implementation 'androidx.compose.material:material'
@@ -321,41 +324,41 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 {% endif %}
 
-{% if config.configuration.networking == 'retrofit' %}
+{% if config.configuration.networking.value == 'retrofit' %}
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
-{% if config.configuration.serialization == 'gson' %}
+{% if config.configuration.serialization.value == 'gson' %}
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.google.code.gson:gson:2.10.1'
-{% elif config.configuration.serialization == 'moshi' %}
+{% elif config.configuration.serialization.value == 'moshi' %}
     implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
     implementation 'com.squareup.moshi:moshi-kotlin:1.14.0'
 {% endif %}
-{% elif config.configuration.networking == 'ktor' %}
+{% elif config.configuration.networking.value == 'ktor' %}
     implementation 'io.ktor:ktor-client-android:2.3.7'
     implementation 'io.ktor:ktor-client-core:2.3.7'
     implementation 'io.ktor:ktor-client-logging:2.3.7'
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     implementation 'io.ktor:ktor-serialization-kotlinx-json:2.3.7'
     implementation 'io.ktor:ktor-client-content-negotiation:2.3.7'
 {% endif %}
 {% endif %}
 
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
 {% endif %}
 
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
     implementation 'com.google.dagger:hilt-android:2.48'
     ksp 'com.google.dagger:hilt-compiler:2.48'
 {% elif config.configuration.dependencyInjection == 'koin' %}
     implementation 'io.insert-koin:koin-android:3.5.0'
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     implementation 'io.insert-koin:koin-androidx-compose:3.5.0'
 {% endif %}
 {% endif %}
 
-{% if config.configuration.localStorage == 'datastore' %}
+{% if config.configuration.localStorage.value == 'datastore' %}
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
 {% endif %}
 
@@ -365,9 +368,9 @@ dependencies {
     ksp 'androidx.room:room-compiler:2.6.1'
 {% endif %}
 
-{% if config.configuration.navigation == 'compose-navigation' %}
+{% if config.configuration.navigation.value == 'compose-navigation' %}
     implementation 'androidx.navigation:navigation-compose:2.7.6'
-{% elif config.configuration.navigation == 'jetpack-navigation' %}
+{% elif config.configuration.navigation.value == 'jetpack-navigation' %}
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
 {% endif %}
@@ -375,7 +378,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     androidTestImplementation platform('androidx.compose:compose-bom:2023.10.01')
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-tooling'
@@ -388,13 +391,13 @@ dependencies {
         return '''
 plugins {
     alias(libs.plugins.androidApplication)
-{% if config.configuration.language == 'kotlin' %}
+{% if config.configuration.language.value == 'kotlin' %}
     alias(libs.plugins.jetbrainsKotlinAndroid)
 {% endif %}
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
     alias(libs.plugins.hiltAndroid)
 {% endif %}
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     alias(libs.plugins.kotlinSerialization)
 {% endif %}
 {% if config.configuration.enableRoom %}
@@ -414,7 +417,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -428,15 +431,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_{{ config.configuration.javaVersion }}
-        targetCompatibility = JavaVersion.VERSION_{{ config.configuration.javaVersion }}
+        sourceCompatibility = JavaVersion.VERSION_{{ config.configuration.javaVersion.value }}
+        targetCompatibility = JavaVersion.VERSION_{{ config.configuration.javaVersion.value }}
     }
-{% if config.configuration.language == 'kotlin' %}
+{% if config.configuration.language.value == 'kotlin' %}
     kotlinOptions {
-        jvmTarget = "{{ config.configuration.javaVersion }}"
+        jvmTarget = "{{ config.configuration.javaVersion.value }}"
     }
 {% endif %}
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     buildFeatures {
         compose = true
     }
@@ -460,13 +463,13 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-{% if config.configuration.uiTheme == 'material3' %}
+{% if config.configuration.uiTheme.value == 'material3' %}
     implementation(libs.androidx.material3)
 {% else %}
     implementation(libs.androidx.compose.material)
@@ -477,41 +480,41 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 {% endif %}
 
-{% if config.configuration.networking == 'retrofit' %}
+{% if config.configuration.networking.value == 'retrofit' %}
     implementation(libs.retrofit)
     implementation(libs.okhttp.logging)
-{% if config.configuration.serialization == 'gson' %}
+{% if config.configuration.serialization.value == 'gson' %}
     implementation(libs.retrofit.converter.gson)
     implementation(libs.gson)
-{% elif config.configuration.serialization == 'moshi' %}
+{% elif config.configuration.serialization.value == 'moshi' %}
     implementation(libs.retrofit.converter.moshi)
     implementation(libs.moshi.kotlin)
 {% endif %}
-{% elif config.configuration.networking == 'ktor' %}
+{% elif config.configuration.networking.value == 'ktor' %}
     implementation(libs.ktor.client.android)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.logging)
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.content.negotiation)
 {% endif %}
 {% endif %}
 
-{% if config.configuration.serialization == 'kotlinx.serialization' %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
     implementation(libs.kotlinx.serialization.json)
 {% endif %}
 
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-{% elif config.configuration.dependencyInjection == 'koin' %}
+{% elif config.configuration.dependencyInjection.value == 'koin' %}
     implementation(libs.koin.android)
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     implementation(libs.koin.androidx.compose)
 {% endif %}
 {% endif %}
 
-{% if config.configuration.localStorage == 'datastore' %}
+{% if config.configuration.localStorage.value == 'datastore' %}
     implementation(libs.androidx.datastore.preferences)
 {% endif %}
 
@@ -521,9 +524,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 {% endif %}
 
-{% if config.configuration.navigation == 'compose-navigation' %}
+{% if config.configuration.navigation.value == 'compose-navigation' %}
     implementation(libs.androidx.navigation.compose)
-{% elif config.configuration.navigation == 'jetpack-navigation' %}
+{% elif config.configuration.navigation.value == 'jetpack-navigation' %}
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 {% endif %}
@@ -531,7 +534,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-{% if config.configuration.uiToolkit == 'jetpack-compose' %}
+{% if config.configuration.uiToolkit.value == 'jetpack-compose' %}
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)

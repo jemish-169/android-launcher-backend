@@ -1,13 +1,13 @@
 from typing import Dict
+from models.config_model import ProjectConfig
+from models.enums import DILib, Language, UIToolkit
 
 class CommonTemplates:
     """Template handler for common files like MainActivity, gradle.properties, etc."""
 
-    def __init__(self, config: dict):
+    def __init__(self, config: ProjectConfig):
         self.config = config
-        self.project_config = config['project']
-        self.app_config = config['configuration']
-        self.project_pascal_case = self.project_config['name'].replace(' ', '')
+        self.project_pascal_case = self.config.configuration.projectName.replace(' ', '')
 
     def get_templates(self) -> Dict[str, str]:
         """Return all common templates"""
@@ -15,19 +15,19 @@ class CommonTemplates:
             'gradle_properties.j2': self._get_gradle_properties_template(),
         }
 
-        language = self.app_config.get('language')
-        ui_toolkit = self.app_config.get('uiToolkit')
+        language = self.config.configuration.language
+        ui_toolkit = self.config.configuration.uiToolkit
 
-        if language == 'kotlin':
+        if language == Language.kotlin:
             templates['main_activity_kotlin.j2'] = self._get_main_activity_kotlin_template()
-        elif language == 'java' and ui_toolkit == 'xml':
+        elif language == Language.java and ui_toolkit == UIToolkit.xml:
             templates['main_activity_java.j2'] = self._get_main_activity_java_template()
 
         return templates
 
     def _get_main_activity_kotlin_template(self) -> str:
-        is_compose = self.app_config.get('uiToolkit') == 'jetpack-compose'
-        use_hilt = self.app_config.get('dependencyInjection') == 'hilt'
+        is_compose = self.config.configuration.uiToolkit == UIToolkit.compose
+        use_hilt = self.config.configuration.dependencyInjection == DILib.hilt
 
         return f'''package {{{{ config.project.package }}}}
 
@@ -42,7 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import ''' + f"{self.project_config['package']}.ui.theme.{self.project_pascal_case}Theme" if is_compose else 'import androidx.appcompat.app.AppCompatActivity'}
+import ''' + f"{self.config.project.package}.ui.theme.{self.project_pascal_case}Theme" if is_compose else 'import androidx.appcompat.app.AppCompatActivity'}
 
 {f"@AndroidEntryPoint\n" if use_hilt else ''}{'''class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +83,7 @@ fun GreetingPreview() {
 '''
 
     def _get_main_activity_java_template(self) -> str:
-        use_hilt = self.app_config.get('dependencyInjection') == 'hilt'
+        use_hilt = self.config.configuration.dependencyInjection == DILib.hilt
 
         return '''package {{ config.project.package }};
 
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 '''
 
     def _get_gradle_properties_template(self) -> str:
-        view_binding_enabled = self.app_config.get('viewBinding', False)
+        view_binding_enabled = self.config.configuration.viewBinding
         return f'''# Project-wide Gradle settings.
 org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
 android.useAndroidX=true

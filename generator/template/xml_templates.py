@@ -1,10 +1,11 @@
+from models.config_model import ProjectConfig
+
+
 class XmlTemplates:
     """Template handler for XML related templates (resources, manifests, layouts)"""
     
-    def __init__(self, config: dict):
+    def __init__(self, config: ProjectConfig):
         self.config = config
-        self.project_config = config['project']
-        self.app_config = config['configuration']
     
     @staticmethod
     def get_permission_manifest_entries(permissions: list) -> dict:
@@ -116,7 +117,7 @@ class XmlTemplates:
 {% if use_network_config %}
         android:networkSecurityConfig="@xml/network_security_config"
 {% endif %}
-{% if config.configuration.dependencyInjection == 'hilt' %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
         android:name=".{{ config.project.name.replace(' ', '').replace('-', '').replace('_', '') }}Application"
 {% endif %}
         tools:targetApi="{{ config.project.targetSdk }}">
@@ -132,7 +133,7 @@ class XmlTemplates:
             </intent-filter>
         </activity>
         
-{% if config.configuration.networking == 'retrofit' or config.configuration.networking == 'ktor' %}
+{% if config.configuration.networking.value == 'retrofit' or config.configuration.networking.value == 'ktor' %}
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -155,7 +156,7 @@ class XmlTemplates:
     <string name="hello_world">Hello World!</string>
     <string name="welcome_message">Welcome to {{ config.project.name }}</string>
     
-{% if config.configuration.networking != 'None' %}
+{% if config.configuration.networking.value != 'none' %}
     <string name="network_error">Network connection error</string>
     <string name="loading">Loading...</string>
 {% endif %}
@@ -192,7 +193,7 @@ class XmlTemplates:
     <color name="secondary">{{ config.configuration.themeColors.secondary }}</color>
     <color name="tertiary">{{ config.configuration.themeColors.tertiary }}</color>
     
-{% if config.configuration.uiTheme == 'material3' %}
+{% if config.configuration.uiTheme.value == 'material3' %}
     <color name="primary_container">#EADDFF</color>
     <color name="on_primary_container">#21005D</color>
     <color name="secondary_container">#E8DEF8</color>
@@ -225,11 +226,11 @@ class XmlTemplates:
     
     def _get_themes_xml_template(self):
         """Generate themes.xml template"""
-        theme_name = self.project_config['name'].replace(' ', '').replace('-', '').replace('_', '')
+        theme_name = self.config.project.name.replace(' ', '').replace('-', '').replace('_', '')
         
         return f'''<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-{{% if config.configuration.uiTheme == 'material3' %}}
+{{% if config.configuration.uiTheme.value == 'material3' %}}
     <style name="Base.Theme.{theme_name}" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
@@ -256,7 +257,7 @@ class XmlTemplates:
         <item name="android:colorBackground">@color/background</item>
         <item name="colorOnBackground">@color/on_background</item>
     </style>
-{{% elif config.configuration.uiTheme == 'material3-expressive' %}}
+{{% elif config.configuration.uiTheme.value == 'material3-expressive' %}}
     <style name="Base.Theme.{theme_name}" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -281,7 +282,7 @@ class XmlTemplates:
 
     <style name="Theme.{theme_name}" parent="Base.Theme.{theme_name}" />
     
-{{% if config.configuration.uiToolkit != 'jetpack-compose' %}}
+{{% if config.configuration.uiToolkit.value != 'jetpack-compose' %}}
     <style name="Theme.{theme_name}.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="Theme.{theme_name}.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 {{% endif %}}

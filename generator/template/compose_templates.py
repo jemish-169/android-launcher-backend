@@ -1,11 +1,11 @@
+from models.config_model import ProjectConfig
+
 class ComposeTemplates:
     """Template handler for Jetpack Compose related templates"""
 
-    def __init__(self, config: dict):
+    def __init__(self, config: ProjectConfig):
         self.config = config
-        self.project_config = config['project']
-        self.app_config = config['configuration']
-        self.project_pascal_case = self.project_config['name'].replace(' ', '')
+        self.project_pascal_case = self.config.project.name.replace(' ', '')
 
     def get_templates(self) -> dict:
         """Return all Compose-related templates"""
@@ -138,116 +138,116 @@ import androidx.compose.ui.unit.sp
 import {{ config.project.package }}.R
 
 // Custom font family
-val {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily = FontFamily(
-    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_light, FontWeight.Light),
-    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_regular, FontWeight.Normal),
-    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_medium, FontWeight.Medium),
-    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_bold, FontWeight.Bold),
-    Font(R.font.{{ config.configuration.typography.fontName.lower() if config.configuration.typography and config.configuration.typography.fontName else 'roboto' }}_semibold, FontWeight.SemiBold)
+val {{ config.configuration.fontName.title() }}FontFamily = FontFamily(
+    Font(R.font.{{ config.configuration.fontName.lower() }}_light, FontWeight.Light),
+    Font(R.font.{{ config.configuration.fontName.lower() }}_regular, FontWeight.Normal),
+    Font(R.font.{{ config.configuration.fontName.lower() }}_medium, FontWeight.Medium),
+    Font(R.font.{{ config.configuration.fontName.lower() }}_bold, FontWeight.Bold),
+    Font(R.font.{{ config.configuration.fontName.lower() }}_semibold, FontWeight.SemiBold)
 )
 
 // Set of Material typography styles
 val Typography = Typography(
     displayLarge = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 57.sp,
         lineHeight = 64.sp,
         letterSpacing = (-0.25).sp,
     ),
     displayMedium = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 45.sp,
         lineHeight = 52.sp,
         letterSpacing = 0.sp,
     ),
     displaySmall = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = 0.sp,
     ),
     headlineLarge = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp,
     ),
     headlineMedium = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
     ),
     headlineSmall = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp,
     ),
     titleLarge = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp,
     ),
     titleMedium = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp,
     ),
     titleSmall = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp,
     ),
     bodyLarge = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
     ),
     bodyMedium = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp,
     ),
     bodySmall = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp,
     ),
     labelLarge = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp,
     ),
     labelMedium = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
     ),
     labelSmall = TextStyle(
-        fontFamily = {{ config.configuration.typography.fontName.title() if config.configuration.typography and config.configuration.typography.fontName else 'Roboto' }}FontFamily,
+        fontFamily = {{ config.configuration.fontName.title() }}FontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
