@@ -5,6 +5,7 @@ import json, os
 from fastapi.middleware.cors import CORSMiddleware
 from models.config_model import ProjectConfig
 from pydantic import ValidationError
+from mangum import Mangum
 
 app = FastAPI(title="Android Project Generator", version="1.0.0")
 
@@ -15,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+handler = Mangum(app)
 
 @app.post("/generate")
 async def generate_android_project(file: UploadFile = File(...), background_tasks: BackgroundTasks = BackgroundTasks()):
