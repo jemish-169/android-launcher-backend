@@ -1,0 +1,13 @@
+plugins {
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.jetbrainsKotlinAndroid) apply false
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
+    alias(libs.plugins.hiltAndroid) apply false
+{% endif %}
+{% if config.configuration.serialization.value == 'kotlinx-serialization' %}
+    alias(libs.plugins.kotlinSerialization) apply false
+{% endif %}
+{% if config.configuration.enableRoom %}
+    alias(libs.plugins.ksp) apply false
+{% endif %}
+}

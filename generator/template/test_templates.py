@@ -18,7 +18,7 @@ class TestTemplates:
             }
         else :
             return {
-                'unit_test_java.k2': self._get_test_java(),
+                'unit_test_java.j2': self._get_test_java(),
                 'example_instrumented_test_java.j2': self._get_android_test_java()
             }
 

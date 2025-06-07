@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+{% for permission in permissions %}
+    <uses-permission android:name="{{ permission }}"{% if permission == 'android.permission.WRITE_EXTERNAL_STORAGE' %} 
+        android:maxSdkVersion="28"{% endif %}{% if permission == 'android.permission.ACCESS_BACKGROUND_LOCATION' %} 
+        tools:targetApi="29"{% endif %} />
+{% endfor %}
+
+{% for feature in uses_features %}
+    <uses-feature android:name="{{ feature }}" android:required="false" />
+{% endfor %}
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.{{ config.project.name.replace(' ', '').replace('-', '').replace('_', '') }}"
+{% if use_network_config %}
+        android:networkSecurityConfig="@xml/network_security_config"
+{% endif %}
+{% if config.configuration.dependencyInjection.value == 'hilt' %}
+        android:name=".{{ config.project.name.replace(' ', '').replace('-', '').replace('_', '') }}Application"
+{% endif %}
+        tools:targetApi="{{ config.project.targetSdk }}">
+        
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.{{ config.project.name.replace(' ', '').replace('-', '').replace('_', '') }}"
+            tools:ignore="AppLinkUrlError">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+{% if config.configuration.networking.value == 'retrofit' or config.configuration.networking.value == 'ktor' %}
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+{% endif %}
+    </application>
+
+</manifest>

@@ -2,7 +2,7 @@ from enum import Enum
 
 class UIToolkit(str, Enum):
     compose = "jetpack-compose"
-    xml = "xml-views"
+    xml = "xml"
 
 class NetworkingLib(str, Enum):
     retrofit = "retrofit"
