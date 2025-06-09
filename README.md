@@ -1,14 +1,9 @@
-DEPLOYMENT INSTRUCTIONS:
-
 1. Install Python 3.10 or higher
 2. Install dependencies:
    pip install -r requirements.txt
 
 3. Run the development server:
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-4. For production deployment:
-   uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 
 API USAGE:
 
